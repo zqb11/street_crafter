@@ -12,13 +12,14 @@ import os
 import cv2
 import shutil
 import sys
+import subprocess
 sys.path.append(os.getcwd())
 
 from easyvolcap.utils.console_utils import *
 
 def image_filename_to_cam(x): return int(x.split('/')[0].split('_')[1])  # cam_{cam_id}/{frame}.png
 
-
+# 时间帧_视角.png->cam_视角/时间帧.png
 def convert_filename(filename):
     # {frame}_{cam_id}.png -> cam_{cam_id}/{frame}.png
     frame, cam_id = filename.split('.')[0].split('_')
@@ -100,11 +101,12 @@ def run_colmap_waymo(result):
             shutil.copyfile(image_filename, new_image_filename)
 
     # copy mask
-    for i, image_filename in enumerate(mask_image_filenames):
-        basename = os.path.basename(image_filename)
-        mask_images_dir = os.path.join(colmap_dir, 'mask')
-        new_image_filename = os.path.join(mask_images_dir, convert_filename(basename))
-        new_mask_filename = f'{new_image_filename}.png'
+    for i, image_filename in enumerate(mask_image_filenames):# 遍历动态掩码图像路径
+        basename = os.path.basename(image_filename)# 图像名
+        mask_images_dir = os.path.join(colmap_dir, 'mask')# colmap的掩码图像目录
+        new_image_filename = os.path.join(mask_images_dir, convert_filename(basename))# colmap的掩码图像路径
+        #new_mask_filename = f'{new_image_filename}.png'
+        new_mask_filename = f'{new_image_filename}'# 确保colmap掩码图像名=colmap训练图像名
         if not os.path.exists(new_mask_filename):
             shutil.copyfile(image_filename, new_mask_filename)
             mask = cv2.imread(new_mask_filename)
@@ -112,13 +114,20 @@ def run_colmap_waymo(result):
             cv2.imwrite(new_mask_filename, flip_mask)
 
     # https://colmap.github.io/faq.html#mask-image-regions
-    os.system(f'colmap feature_extractor \
+    subprocess.run(f'colmap feature_extractor \
             --ImageReader.mask_path {mask_images_dir} \
             --ImageReader.camera_model SIMPLE_PINHOLE  \
             --ImageReader.single_camera_per_folder 1 \
             --database_path {colmap_dir}/database.db \
             --image_path {train_images_dir} \
-            --SiftExtraction.use_gpu 0')
+            --SiftExtraction.use_gpu 0', shell=True, check=True)
+    # subprocess.run(f'colmap feature_extractor \
+    #         --ImageReader.mask_path {mask_images_dir} \
+    #         --ImageReader.camera_model SIMPLE_PINHOLE  \
+    #         --ImageReader.single_camera_per_folder 1 \
+    #         --database_path {colmap_dir}/database.db \
+    #         --image_path {train_images_dir} \
+    #         --SiftExtraction.use_gpu 0', shell=True, check=True)
 
     # load intrinsic
     camera_infos = dict()
@@ -260,12 +269,12 @@ def run_colmap_waymo(result):
     with open(rigid_config_path, "w+") as f:
         json.dump([cam_rigid], f, indent=4)
 
-    os.system(f'colmap exhaustive_matcher \
-            --database_path {colmap_dir}/database.db')
+    subprocess.run(f'colmap exhaustive_matcher \
+            --database_path {colmap_dir}/database.db --SiftMatching.use_gpu 0', shell=True, check=True)
 
     triangulated_dir = os.path.join(colmap_dir, 'triangulated/sparse/model')
     os.makedirs(triangulated_dir, exist_ok=True)
-    os.system(f'colmap point_triangulator \
+    subprocess.run(f'colmap point_triangulator \
         --database_path {colmap_dir}/database.db \
         --image_path {train_images_dir} \
         --input_path {model_dir} \
@@ -280,11 +289,11 @@ def run_colmap_waymo(result):
         --Mapper.tri_min_angle 0.5 \
         --Mapper.tri_ignore_two_view_tracks 1 \
         --Mapper.tri_complete_max_reproj_error 4 \
-        --Mapper.tri_continue_max_angle_error 4')
+        --Mapper.tri_continue_max_angle_error 4', shell=True, check=True)
 
     if cfg.data.use_colmap_pose:
         # May lead to unstable results when refining relative poses
-        os.system(f'colmap rig_bundle_adjuster \
+        subprocess.run(f'colmap rig_bundle_adjuster \
                 --input_path {triangulated_dir} \
                 --output_path {triangulated_dir} \
                 --rig_config_path {rigid_config_path} \
@@ -293,7 +302,11 @@ def run_colmap_waymo(result):
                 --BundleAdjustment.max_num_iterations 50 \
                 --BundleAdjustment.refine_focal_length 0 \
                 --BundleAdjustment.refine_principal_point 0 \
-                --BundleAdjustment.refine_extra_params 0')
+                --BundleAdjustment.refine_extra_params 0', shell=True, check=True)
+
+    points_path = os.path.join(triangulated_dir, "points3D.bin")
+    if not os.path.isfile(points_path):
+        raise FileNotFoundError(f"COLMAP did not produce the point cloud: {points_path}")
 
     os.system(f'rm -rf {train_images_dir}')
     os.system(f'rm -rf {test_images_dir}')

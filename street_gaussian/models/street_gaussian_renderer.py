@@ -250,9 +250,13 @@ class StreetGaussianRenderer():
             tile_width,
             tile_height,
             packed=False,
-            n_cameras=1,
         )
         isect_offsets = isect_offset_encode(isect_ids, 1, tile_width, tile_height)
+
+        # Newer gsplat versions return separate horizontal and vertical radii.
+        # Keep those for tile intersection, then use one radius per Gaussian.
+        if radii.ndim == means2d.ndim:
+            radii = radii.amax(dim=-1)
 
         # Handle spherical harmonics
         dirs = xyz3[None, :, :] - camera.camera_center.to(xyz3, non_blocking=True)  # [1, N, 3]

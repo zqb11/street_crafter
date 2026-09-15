@@ -256,7 +256,9 @@ def generate_dataparser_outputs(
 
     # run colmap
     colmap_basedir = os.path.join(f'{cfg.model_path}/colmap')
-    if not os.path.exists(os.path.join(colmap_basedir, 'triangulated/sparse/model')):
+    if (cfg.data.use_colmap or cfg.data.use_colmap_pose) and not os.path.isfile(
+        os.path.join(colmap_basedir, 'triangulated/sparse/model/points3D.bin')# 检查points3D.bin是否存在，而不是目录是否存在，缺失时重新运行colmap
+    ):
         from script.colmap_waymo_full import run_colmap_waymo
         run_colmap_waymo(result)
 

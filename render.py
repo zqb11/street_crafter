@@ -117,7 +117,7 @@ def main():
     elif cfg.mode == 'novel_view':
         render_novel_view()
     elif cfg.mode == 'diffusion':
-        run_diffusion()
+        run_diffusion()# 中间输出-原轨迹下、偏离2m新轨迹下、偏离3m新轨迹下的点云渲染图像 输出-偏离2m新轨迹下、偏离3m新轨迹下的渲染视频
     else:
         raise NotImplementedError()
 
