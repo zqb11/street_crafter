@@ -27,7 +27,7 @@ class Scene:
 
         if cfg.mode == 'diffusion':
             assert self.pointcloud_processor is not None
-        elif cfg.mode == 'train':
+        elif cfg.mode == 'train':# 初始化高斯点云
             assert self.pointcloud_processor is not None
             self.pointcloud_processor.initailize_ply(cfg.model_path, self.dataset.getmeta('obj_meta'))
 
@@ -53,7 +53,7 @@ class Scene:
             state_dict = torch.load(checkpoint_path)
             self.gaussians.load_state_dict(state_dict=state_dict)
         
-        # render conditions
+        # render conditions渲染训练视角和新视角雷达条件
         if (cfg.mode == 'train' and cfg.diffusion.use_diffusion) or cfg.mode == 'diffusion':
             assert self.diffusion is not None
             cameras = self.getTrainCameras() + self.getTestCameras() + self.getNovelViewCameras()

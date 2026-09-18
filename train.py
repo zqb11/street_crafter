@@ -50,7 +50,7 @@ def saveRuntimeCode(dst: str) -> None:
 
     print('Backup Finished!')
 
-
+# 训练
 def training():
     training_args = cfg.train
     optim_args = cfg.optim
@@ -58,12 +58,13 @@ def training():
     diffusion_args = cfg.diffusion
 
     tb_writer = prepare_output_and_logger()
-
-    scene: Scene = create_scene()
+    # 初始化
+    # 创建场景
+    scene: Scene = create_scene()# 准备数据，初始化sc、sg和lidar点云，渲染点云条件
     gaussians: StreetGaussianModel = scene.gaussians
     gaussians.training_setup()
     gaussians_renderer = StreetGaussianRenderer()
-
+    # 蒸馏开关
     use_diffusion = diffusion_args.use_diffusion and len(diffusion_args.sample_iterations) > 0
     if use_diffusion:
         diffusion_runner = getDiffusionRunner(scene)
@@ -120,7 +121,7 @@ def training():
             gaussians.oneupSHdegree()
 
         restarting = iteration == start_iter and iteration - 1 in diffusion_args.sample_iterations
-        if use_diffusion and (iteration in diffusion_args.sample_iterations or restarting):
+        if use_diffusion and (iteration in diffusion_args.sample_iterations or restarting):#定期调用teacher，刷新伪真值
             with torch.no_grad():
                 print(f"Sampling diffusion at iteration {iteration - restarting}")
                 novel_viewpoint_stack = scene.getNovelViewCameras().copy()
@@ -155,7 +156,7 @@ def training():
         image, acc, viewspace_point_tensor, visibility_filter, radii = render_pkg["rgb"], render_pkg['acc'], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
         depth = render_pkg['depth']  # [1, H, W]
         scalar_dict = dict()
-        if viewpoint_cam.meta['is_novel_view']:
+        if viewpoint_cam.meta['is_novel_view']:#蒸馏损失
             assert viewpoint_cam.meta['diffusion_original_image'] is not None, 'Diffusion original image is not found'
             image = diffusion_runner.preprocess_tensor(image)  # type: ignore
             mask = diffusion_runner.preprocess_tensor(mask)  # type: ignore

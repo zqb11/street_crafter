@@ -224,7 +224,7 @@ class WaymoDiffusionRunner(DiffusionRunner):
 
         diffusion_result = torch.stack([diffusion_result[frames.index(f)] for f in test_frames])
         return diffusion_result
-
+    # 准备视频窗口、参考图、LiDAR 条件和当前渲染
     @torch.no_grad()
     def run_sequence(self, cameras: List[Camera], train_cameras: List[Camera], use_render=True, scale: float = 0.3, masked_guidance: bool = False):
         frames = [camera.meta['frame'] for camera in cameras]
@@ -314,7 +314,7 @@ class WaymoDiffusionRunner(DiffusionRunner):
         assert filled.all(), 'Not all frames are passed through the prior'
 
         for i, camera in enumerate(cameras):
-            camera.meta['diffusion_original_image'] = diffusion_result[i].float().to('cuda', non_blocking=True)
+            camera.meta['diffusion_original_image'] = diffusion_result[i].float().to('cuda', non_blocking=True)# 将Teacher输出写到元数据
             if cfg.diffusion.get('save_diffusion_render', True):
                 diffusion_image = (diffusion_result[i].permute(1, 2, 0) * 255).byte().cpu().numpy()
                 diffusion_image = cv2.cvtColor(diffusion_image, cv2.COLOR_RGB2BGR)

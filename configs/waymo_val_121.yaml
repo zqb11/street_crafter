@@ -71,12 +71,12 @@ optim:
     track_rotation_lr_init: 0.00001
     track_rotation_lr_final: 0.000005
     track_rotation_max_steps: 30000
-
+#蒸馏开关
 diffusion:
     use_diffusion: True
     config_path: video_diffusion/configs/inference/waymo_high_res.yaml
     ckpt_path: video_diffusion/ckpts/vista_condition_high_res_mix_v2.safetensors
     height: 576
     width: 1024
-    sample_iterations: [7000, 12000, 17000, 22000]
+    sample_iterations: [7000, 12000, 17000, 22000] #蒸馏迭代步：在这些迭代步加入新视角伪监督
     sample_scales: [0.7, 0.3]

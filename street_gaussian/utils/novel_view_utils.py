@@ -28,12 +28,12 @@ def affine_inverse(A: np.ndarray):
 
 
 def waymo_novel_view_cameras(cameras: List[CameraInfo], ego_frame_poses, obj_info, camera_tracklets):
-    from street_gaussian.config import cfg
+    from street_gaussian.config import cfg# 导入配置
     modes = []
     
     shifts = cfg.render.novel_view.shift if isinstance(cfg.render.novel_view.shift, list) else [cfg.render.novel_view.shift]
     if cfg.mode == 'train':
-        shifts = [x for x in shifts if x != 0]
+        shifts = [x for x in shifts if x != 0]# 剔除零偏移
     for shift in shifts:
         modes.append({'shift': shift, 'rotate': 0.0})
     # rotates = cfg.render.novel_view.rotate if isinstance(cfg.render.novel_view.rotate, list) else [cfg.render.novel_view.rotate]

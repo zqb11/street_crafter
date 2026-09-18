@@ -414,7 +414,7 @@ class VideoDiffusionModel():
 
         batch['guide_mask_seq'] = guide_mask_seq
         batch['img_mask_seq'] = img_mask_seq
-
+    # 扩散前向
     def forward(self, batch, scale: float = 0.3, cond_indices: List[int] = [0]):
         '''
         batch (dict): input batch
