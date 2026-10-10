@@ -1,0 +1,6 @@
+022机：
+        ssh -p 49537 root@connect.nma1.seetacloud.com
+        lHMrKm7R2PkN
+
+ssh -p 49537 -R 16000:localhost:7890 root@connect.nma1.seetacloud.com
+ssh -p 49537 root@connect.nma1.seetacloud.com
