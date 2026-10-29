@@ -1,0 +1,26 @@
+task: nio
+source_path: data/nio/nop/efa3fa0a-4af8-4f67-846e-24116d7470d6
+output_dir: output/nio/efa3fa0a-4af8-4f67-846e-24116d7470d6/video_generation
+camera_id: 0
+selected_frames: [0, 224]
+# Positive offsets follow the vehicle's +Y (left) axis, without rotation.
+shifts: [2.0, 3.0]
+fps: 15
+render:
+    radius: 2
+    near: 0.1
+    far: 120.0
+    resume: true
+diffusion:
+    config_path: video_diffusion/configs/inference/waymo_high_res.yaml
+    ckpt_path: video_diffusion/ckpts/vista_condition_high_res_mix_v2.safetensors
+    height: 576
+    width: 1024
+    n_steps: 50
+    cfg_scale: 2.5
+    seed: 23
+    window_overlap: 4
+    decode_chunk_size: 1
+    # The diffusion checkpoint includes the image encoder weights.
+    clip_pretrained: null
+    low_vram: true

@@ -1,5 +1,3 @@
-from vwm.data.subsets.waymo import WaymoDataset
-from vwm.data.subsets.pandaset import PandasetDataset
 from vwm.modules.diffusionmodules.sampling import EulerEDMSampler, EulerEDMSamplerSDS
 import imageio
 from vwm.util import default, instantiate_from_config
@@ -15,7 +13,6 @@ from omegaconf import ListConfig, OmegaConf
 from safetensors.torch import load_file as load_safetensors
 from torch import autocast
 import warnings
-from easyvolcap.utils.console_utils import *
 warnings.filterwarnings("ignore")
 
 DATASET2SOURCES = {
@@ -279,6 +276,7 @@ def get_condition(model, value_dict, num_samples, force_uc_zero_embeddings, devi
                 uc[k] = uc[k][[0]]
 
     # add guidance
+    load_model(model.first_stage_model)
     guidance = model.encode_first_stage(value_dict['guide_frames'])
     guidance_c = dict()
     guidance_c["input"] = guidance[:num_samples].to(device)
@@ -485,6 +483,8 @@ def parse_guidance_path(guidance_path):
 
 
 if __name__ == "__main__":
+    from vwm.data.subsets.waymo import WaymoDataset
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--ckpt_path', type=str, default='./ckpts/vista_condition_high_res_mix_v2.safetensors')
     parser.add_argument('--config_path', type=str, default='./configs/inference/waymo_high_res.yaml')

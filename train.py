@@ -162,7 +162,7 @@ def training():
             mask = diffusion_runner.preprocess_tensor(mask)  # type: ignore
             gt_image = viewpoint_cam.meta['diffusion_original_image']
 
-            upper = int(mask.shape[-2] * 0.4)
+            upper = int(mask.shape[-2] * 0.4)# 图像下方60%参与监督
             mask[..., :upper, :] = 0 # do not compute loss on the upper half of the image?
             gt_image = viewpoint_cam.meta['diffusion_original_image']            
             image_loss = image[:, upper:, :]
@@ -174,8 +174,10 @@ def training():
             # Ll1 = l1_loss(image, gt_image, mask)
             # ssim_value = ssim(image, gt_image, mask=mask)
             # lpips_value = lpips(image * mask, gt_image * mask)
+            # 蒸馏损失公式
             loss = (1.0 - optim_args.lambda_novel_dssim) * optim_args.lambda_novel_l1 * Ll1 + optim_args.lambda_novel_dssim * (1.0 - ssim_value) + optim_args.lambda_novel_lpips * lpips_value
             loss = loss * optim_args.lambda_novel
+            
             scalar_dict['novel_lpips'] = lpips_value.item()
             scalar_dict['novel_ssim'] = ssim_value.item()
             scalar_dict['novel_l1'] = Ll1.item()
