@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd /workspace/drivegs
+exec /usr/local/bin/drivegs-python /workspace/drivegs/distill_pipeline.py \
+    --config /workspace/drivegs/configs/streetcrafter_distill.container.json \
+    --student-python /usr/local/bin/drivegs-python \
+    --student-cuda-home /usr/local/cuda-12.8 "$@"

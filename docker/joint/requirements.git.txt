@@ -1,0 +1,6 @@
+clip @ git+https://github.com/openai/CLIP.git@d05afc436d78f1c48dc0dbf8e5980a9d471f35f6
+easyvolcap @ git+https://github.com/yunzhiy/EasyVolcap@e72da764ed7e88d0e4ab61e8d9071d465a951a4b
+diff_point_rasterization @ git+https://github.com/yunzhiy/diff-point-rasterization@a67579e0bc96a6b3a2655637bd6f8637540b2947
+gsplat @ git+https://github.com/dendenxu/gsplat.git@2e4ad74be6ac9fb27582683318d5faa5bb7533cb
+nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git@729261dc64c4241ea36efda84fbf532cc8b425b8
+

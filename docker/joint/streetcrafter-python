@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=/workspace/street_crafter
+environment=/opt/conda/envs/streetcrafter
+unset PYTHONHOME PYTHONUSERBASE PIP_CONSTRAINT PIP_BUILD_CONSTRAINT
+unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS CONDA_BUILD_SYSROOT _CE_CONDA _CE_M
+export CONDA_PREFIX="$environment" CONDA_DEFAULT_ENV=streetcrafter CONDA_SHLVL=1
+export PATH="$environment/bin:/usr/local/cuda-12.1/bin:/usr/local/nvidia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export CUDA_HOME=/usr/local/cuda-12.1 CUDA_PATH=/usr/local/cuda-12.1
+export CUDACXX=/usr/local/cuda-12.1/bin/nvcc CUDAHOSTCXX=/usr/bin/g++
+export CC=/usr/bin/gcc CXX=/usr/bin/g++
+export LD_LIBRARY_PATH="$environment/lib:/usr/local/cuda-12.1/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
+export LIBRARY_PATH=/usr/local/cuda-12.1/lib64/stubs
+export CMAKE_PREFIX_PATH="$environment"
+export PYTHONPATH="$root:$root/video_diffusion" PYTHONNOUSERSITE=1 PYTHONUNBUFFERED=1
+export TORCH_CUDA_ARCH_LIST=8.0 TCNN_CUDA_ARCHITECTURES=80
+export TORCH_EXTENSIONS_DIR=/opt/streetcrafter-kernels
+export TORCH_HOME=/opt/streetcrafter-cache/torch
+export XDG_CACHE_HOME=/opt/streetcrafter-cache
+export TRITON_CACHE_DIR=/opt/streetcrafter-cache/triton
+export CUDA_CACHE_PATH=/opt/streetcrafter-cache/cuda
+export HF_HOME=/opt/streetcrafter-cache/huggingface
+export PYTHON_BIN="$environment/bin/python"
+if [[ -f /opt/streetcrafter/constraints.txt ]]; then
+    export PIP_CONSTRAINT=/opt/streetcrafter/constraints.txt
+fi
+case "$PWD" in
+    "$root"|"$root"/*) ;;
+    *) cd "$root" ;;
+esac
+export PWD
+exec "$environment/bin/python" "$@"

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=/workspace/drivegs
+environment=/opt/conda
+unset PYTHONHOME PYTHONUSERBASE PIP_CONSTRAINT PIP_BUILD_CONSTRAINT
+unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS CONDA_BUILD_SYSROOT _CE_CONDA _CE_M
+unset CC CXX CUDAHOSTCXX DRIVEGS_CCCL_INCLUDE
+export CONDA_PREFIX="$environment" CONDA_DEFAULT_ENV=base CONDA_SHLVL=1
+export PATH="$environment/bin:/usr/local/cuda-12.8/bin:/usr/local/nvidia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export CUDA_HOME=/usr/local/cuda-12.8 CUDA_PATH=/usr/local/cuda-12.8
+export CUDACXX=/usr/local/cuda-12.8/bin/nvcc
+export DRIVEGS_ADH_ROOT=/usr/local/aac/adh/Linux-x86_64 DRIVEGS_WITH_ADH=1
+export LD_LIBRARY_PATH="$environment/lib:$DRIVEGS_ADH_ROOT/lib:/opt/drivegs-adh/lib:/usr/local/cuda-12.8/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
+export LIBRARY_PATH=/usr/local/cuda-12.8/lib64/stubs
+export CMAKE_PREFIX_PATH="$environment"
+export PYTHONPATH="$root/src:$root" PYTHONNOUSERSITE=1 PYTHONUNBUFFERED=1
+export TORCH_CUDA_ARCH_LIST='8.0;8.9+PTX' TCNN_CUDA_ARCHITECTURES='80;89'
+export TORCH_EXTENSIONS_DIR=/opt/drivegs-kernels
+export DRIVEGS_KERNEL_INVENTORY=/opt/drivegs-kernels/inventory.json
+export DRIVEGS_ALLOW_JIT="${DRIVEGS_ALLOW_JIT:-0}"
+export TORCH_HOME=/opt/drivegs-cache/torch XDG_CACHE_HOME=/opt/drivegs-cache
+export TRITON_CACHE_DIR=/opt/drivegs-cache/triton CUDA_CACHE_PATH=/opt/drivegs-cache/cuda
+export HF_HOME=/opt/drivegs-cache/huggingface
+export PYTHON_BIN="$environment/bin/python"
+if [[ -f /opt/drivegs/constraints.txt ]]; then export PIP_CONSTRAINT=/opt/drivegs/constraints.txt; fi
+case "$PWD" in
+    "$root"|"$root"/*) ;;
+    *) cd "$root" ;;
+esac
+export PWD
+exec "$environment/bin/python" "$@"
